@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA / Android Meta Tags -->
+    <meta name="theme-color" content="#0055a5">
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%22,%22short_name%22:%22wE-Tabelle%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#ffffff%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://www.handball.net/img/default-club-logo.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+
     <!-- Apple Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -157,12 +162,29 @@
         .game-date { color: var(--text-muted); font-size: 0.7rem; }
         
         #status-msg { text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 20px; padding-bottom: 20px; }
+        
+        /* Android Install Prompt Overlay */
+        #install-overlay {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 5%;
+            width: 90%;
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-size: 0.85rem;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <!-- Tabellen-Ansicht -->
     <div id="main-view">
         <h1>wE-Jugend KL 588 LIVE</h1>
         <button class="btn-refresh" onclick="fetchData()">🔄 Aktualisieren</button>
@@ -184,7 +206,6 @@
         </table>
     </div>
 
-    <!-- Detail-Ansicht eines Teams -->
     <div id="detail-view">
         <div class="detail-header">
             <img id="detail-team-logo" class="logo" style="width:60px; height:60px;" src="">
@@ -202,16 +223,20 @@
     <div id="status-msg">Lade Daten...</div>
 </div>
 
+<!-- Hilfebox für Android -->
+<div id="install-overlay">
+    <span>App zum Startbildschirm hinzufügen?</span>
+    <button onclick="this.parentElement.style.display='none'" style="background:var(--hamburg-blue); border:none; color:white; padding:8px 12px; border-radius:5px;">OK</button>
+</div>
+
 <script>
 const SHEET_ID = '1rHPyr7IP8vaYsDIpWXjH3kp7I65lBwXLhhkNYYDByHE';
 let allGames = [];
 let teamStats = {};
 
-/** * Extrahiert die Uhrzeit aus den Google Sheets Daten 
- */
 function formatTime(cell) {
     if (!cell || cell.v === null) return "";
-    if (cell.f) return cell.f; // Formatiertes Datum/Zeit aus dem Sheet nutzen
+    if (cell.f) return cell.f;
     const val = cell.v;
     if (typeof val === 'string' && val.includes('Date')) {
         const p = val.match(/\d+/g);
@@ -224,8 +249,6 @@ function formatTime(cell) {
     return "";
 }
 
-/** * Verarbeitet die Antwort von Google Sheets 
- */
 window.handleResponse = function(response) {
     const rows = response.table.rows;
     allGames = rows;
@@ -238,7 +261,6 @@ window.handleResponse = function(response) {
         const guest = c[3].v ? c[3].v.toString().trim() : "";
         if (home === "Heim" || home === "") return;
 
-        // Team-Statistiken initialisieren
         [ {n: home, l: c[8]?.v}, {n: guest, l: c[9]?.v} ].forEach(t => {
             if (!teamStats[t.n]) teamStats[t.n] = { name: t.n, logo: t.l, sp:0, s:0, u:0, n:0, tp:0, tg:0, plus:0, minus:0 };
         });
@@ -248,7 +270,6 @@ window.handleResponse = function(response) {
         const isWertung = (c[6] && (c[6].v === true || c[6].v === "TRUE" || c[6].v === "true"));
         const winnerName = (c[7] && c[7].v) ? c[7].v.toString().trim() : null;
 
-        // Wenn Spiel absolviert
         if (isWertung || (resH !== null && resG !== null)) {
             teamStats[home].sp++; teamStats[guest].sp++;
             const gH = resH || 0; const gG = resG || 0;
@@ -276,8 +297,6 @@ window.handleResponse = function(response) {
     document.getElementById('status-msg').innerText = "Stand: " + new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + " Uhr";
 };
 
-/** * Zeichnet die Tabelle 
- */
 function renderTable() {
     const sorted = Object.values(teamStats).sort((a,b) => (b.plus - a.plus) || (a.minus - b.minus) || ((b.tp-b.tg) - (a.tp-a.tg)) || (b.tp - a.tp));
     const tbody = document.getElementById('table-body');
@@ -298,8 +317,6 @@ function renderTable() {
     });
 }
 
-/** * Zeigt die Team-Details chronologisch an 
- */
 function showDetails(teamName) {
     window.scrollTo(0,0);
     document.getElementById('main-view').style.display = 'none';
@@ -330,7 +347,6 @@ function showDetails(teamName) {
         const date = c[0]?.f || c[0]?.v || "?";
         const formattedTime = formatTime(c[1]);
         
-        // Prüfung auf absolviertes Spiel
         const resH = (c[4] && c[4].v !== null && !isNaN(parseFloat(c[4].v))) ? parseFloat(c[4].v) : null;
         const resG = (c[5] && c[5].v !== null && !isNaN(parseFloat(c[5].v))) ? parseFloat(c[5].v) : null;
         const isPlayed = (resH !== null || (c[6] && (c[6].v === true || c[6].v === "TRUE" || c[6].v === "true")));
@@ -359,7 +375,14 @@ function fetchData() {
     document.body.appendChild(script);
 }
 
-// Initialer Aufruf
+// PWA Install Prompt Logic für Android (Pixel 9a)
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-overlay').style.display = 'flex';
+});
+
 fetchData();
 </script>
 </body>
