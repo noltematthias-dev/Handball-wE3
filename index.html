@@ -7,8 +7,6 @@
     <!-- PWA / Android Meta Tags -->
     <meta name="theme-color" content="#0055a5">
     <meta name="mobile-web-app-capable" content="yes">
-    
-    <!-- Verbessertes Manifest für echten App-Look auf dem Pixel 9a -->
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%22,%22short_name%22:%22wE-Tabelle%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#0055a5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
 
     <!-- Apple Web App Meta Tags -->
@@ -17,7 +15,6 @@
     <meta name="apple-mobile-web-app-title" content="wE-Tabelle">
     <title>wE-Jugend Live-Tabelle</title>
     
-    <!-- App Icons -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
     
@@ -25,183 +22,149 @@
         :root {
             --hamburg-blue: #0055a5;
             --hamburg-red: #e11a2b;
-            --bg-color: #f4f7f6;
+            --bg-color: #f0f2f5;
             --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-muted: #666666;
-            --safe-area-top: env(safe-area-inset-top);
+            --text-main: #1a1a1a;
+            --text-muted: #757575;
+            --safe-top: env(safe-area-inset-top);
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            /* Optimierung für den App-Look (Safe Areas) */
-            padding: calc(var(--safe-area-top) + 10px) 5px 20px 5px;
-            display: flex;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
         }
 
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background: var(--card-bg);
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        #app-content {
+            transition: filter 0.25s ease, transform 0.25s ease;
+            padding: calc(var(--safe-top) + 15px) 10px 80px 10px;
         }
 
-        h1 {
-            text-align: center;
-            color: var(--hamburg-blue);
-            font-size: 1.1rem;
-            margin: 5px 0 12px 0;
-            text-transform: uppercase;
-        }
-
-        .btn-refresh {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 14px;
-            background: var(--hamburg-blue);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 15px;
-            -webkit-appearance: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn-refresh:active {
-            background: #004485;
+        .blurred {
+            filter: blur(8px) brightness(0.95);
             transform: scale(0.98);
+            pointer-events: none;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-        }
+        header { text-align: center; margin-bottom: 20px; }
+        h1 { color: var(--hamburg-blue); font-size: 1.2rem; margin: 0 0 15px 0; font-weight: 800; }
 
-        th {
-            background: #f8f9fa;
-            color: var(--text-muted);
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            padding: 10px 2px;
-            border-bottom: 2px solid #eee;
-        }
-
-        td {
-            padding: 14px 2px;
-            text-align: center;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .team-cell {
-            text-align: left;
+        .nav-tabs {
             display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-        }
-
-        .logo {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-        }
-
-        .pts { font-weight: bold; color: var(--hamburg-blue); }
-        .diff { font-style: italic; color: #666; font-size: 0.7rem; }
-        .highlight { background-color: #eff6ff !important; }
-        
-        tr.clickable { cursor: pointer; }
-        tr.clickable:active { background-color: #f0f0f0; }
-
-        /* Detail View Layout */
-        #detail-view { display: none; animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .detail-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: #e0e0e0;
             border-radius: 12px;
-            margin-bottom: 15px;
+            padding: 4px;
+            margin: 0 auto;
+            max-width: 300px;
         }
 
-        .section-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin: 20px 0 10px 0;
-            color: var(--hamburg-blue);
-            border-left: 4px solid var(--hamburg-blue);
-            padding-left: 10px;
+        .tab {
+            flex: 1; padding: 8px; border: none; background: none; border-radius: 10px;
+            font-weight: 600; font-size: 0.85rem; color: var(--text-muted); transition: all 0.2s;
         }
 
-        .game-card {
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
+        .tab.active { background: white; color: var(--hamburg-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 15px; margin-bottom: 20px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; table-layout: fixed; }
+        th { text-align: center; color: var(--text-muted); font-size: 0.65rem; padding: 10px 2px; border-bottom: 1px solid #eee; }
+        td { padding: 12px 2px; text-align: center; border-bottom: 1px solid #f9f9f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .team-cell { text-align: left; display: flex; align-items: center; gap: 6px; font-weight: 600; }
+        .logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
+        .pts { font-weight: bold; color: var(--hamburg-blue); }
+        .diff-cell { color: #888; font-size: 0.7rem; }
+        .highlight { background-color: #f0f7ff; }
+
+        .game-list { display: flex; flex-direction: column; gap: 8px; }
+        .game-item {
+            background: #f8f9fa; padding: 10px; border-radius: 12px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        
+        .game-main {
             display: grid;
-            grid-template-columns: 70px 1fr 70px;
+            grid-template-columns: 1fr 75px 1fr;
             align-items: center;
-            font-size: 0.8rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            gap: 5px;
         }
 
-        .game-res { text-align: right; font-weight: bold; color: var(--hamburg-blue); white-space: nowrap; }
-        .game-date { color: var(--text-muted); font-size: 0.7rem; }
-        
-        #status-msg { text-align: center; color: var(--text-muted); font-size: 0.7rem; margin-top: 20px; padding-bottom: 20px; }
-        
-        /* Android Install Prompt Overlay */
-        #install-overlay {
-            display: none;
-            position: fixed;
-            bottom: 20px;
-            left: 5%;
-            width: 90%;
-            background: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            z-index: 1000;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            font-size: 0.85rem;
-            justify-content: space-between;
-            align-items: center;
+        .game-team { 
+            font-weight: 500; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            min-width: 0;
         }
+        .game-team span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .game-team.right { justify-content: flex-end; text-align: right; }
+        
+        .game-score { 
+            background: var(--hamburg-blue); color: white; padding: 4px 2px; 
+            border-radius: 6px; font-weight: 800; text-align: center; font-size: 0.75rem;
+            min-width: 65px;
+        }
+        
+        .game-info { font-size: 0.65rem; color: var(--text-muted); text-align: center; border-top: 1px solid #eee; padding-top: 4px; }
+
+        /* Modal Layout */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); display: none;
+            justify-content: center; align-items: flex-end; z-index: 2000;
+            backdrop-filter: blur(2px);
+            transition: opacity 0.2s ease;
+        }
+
+        #modal-window {
+            background: white; width: 100%; max-width: 500px; max-height: 88vh;
+            border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.25s cubic-bezier(0.1, 0.5, 0.1, 1);
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
+            touch-action: none; /* Deaktiviert Browser-Handling für sauberes Swipen */
+            will-change: transform;
+        }
+
+        #modal-window.open { transform: translateY(0); }
+
+        .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .close-bar { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 15px auto; }
+
+        #refresh-status { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; padding-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="main-view">
-        <h1>wE-Jugend KL 588 LIVE</h1>
-        <button class="btn-refresh" onclick="fetchData()">🔄 Aktualisieren</button>
+<div id="app-content">
+    <header>
+        <h1>wE-Jugend KL 588</h1>
+        <div class="nav-tabs">
+            <button id="btn-tab-table" class="tab active" onclick="switchTab('table')">Tabelle</button>
+            <button id="btn-tab-schedule" class="tab" onclick="switchTab('schedule')">Spielplan</button>
+        </div>
+    </header>
+
+    <div id="view-table" class="card">
         <table>
+            <colgroup>
+                <col style="width: 25px;">
+                <col style="width: auto;">
+                <col style="width: 25px;">
+                <col style="width: 45px;">
+                <col style="width: 35px;">
+                <col style="width: 40px;">
+            </colgroup>
             <thead>
                 <tr>
-                    <th>Pl.</th>
+                    <th>#</th>
                     <th style="text-align:left;">Team</th>
                     <th>Sp.</th>
-                    <th>S</th>
-                    <th>U</th>
-                    <th>N</th>
                     <th>Tore</th>
                     <th>Diff.</th>
                     <th>Pkt.</th>
@@ -211,26 +174,22 @@
         </table>
     </div>
 
-    <div id="detail-view">
-        <div class="detail-header">
-            <img id="detail-team-logo" class="logo" style="width:60px; height:60px;" src="">
-            <h2 id="detail-team-name" style="margin:10px 0 0 0; font-size:1.2rem;"></h2>
-        </div>
-        <button class="btn-refresh" style="background:#6c757d;" onclick="showMainView()">⬅ Zurück zur Tabelle</button>
-        
-        <div class="section-title">Absolvierte Spiele</div>
-        <div id="played-games"></div>
-        
-        <div class="section-title">Weiterer Spielplan</div>
-        <div id="upcoming-games"></div>
+    <div id="view-schedule" style="display:none;">
+        <div id="full-schedule-list" class="game-list"></div>
     </div>
-    
-    <div id="status-msg">Lade Daten...</div>
+
+    <div id="refresh-status">Zum Aktualisieren nach unten ziehen</div>
 </div>
 
-<div id="install-overlay">
-    <span>App zum Startbildschirm hinzufügen?</span>
-    <button onclick="this.parentElement.style.display='none'" style="background:var(--hamburg-blue); border:none; color:white; padding:8px 12px; border-radius:5px;">OK</button>
+<div id="modal-overlay" onclick="closeDetails()">
+    <div id="modal-window" onclick="event.stopPropagation()">
+        <div class="close-bar"></div>
+        <div class="modal-header">
+            <img id="modal-logo" src="" class="logo" style="width:40px; height:40px;">
+            <h2 id="modal-team-name" style="margin:0; font-size:1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></h2>
+        </div>
+        <div id="modal-games-list" class="game-list" style="touch-action: pan-y;"></div>
+    </div>
 </div>
 
 <script>
@@ -238,32 +197,52 @@ const SHEET_ID = '1rHPyr7IP8vaYsDIpWXjH3kp7I65lBwXLhhkNYYDByHE';
 let allGames = [];
 let teamStats = {};
 
+function getLogoUrl(logoId) {
+    return logoId ? `https://www.handball.net/files/clubs/logos/${logoId}` : "https://www.handball.net/img/default-club-logo.png";
+}
+
 function formatTime(cell) {
-    if (!cell || cell.v === null) return "";
+    if (!cell || cell.v === null || cell.v === undefined) return "";
     if (cell.f) return cell.f;
     const val = cell.v;
     if (typeof val === 'string' && val.includes('Date')) {
-        const p = val.match(/\d+/g);
-        if (p && p.length >= 5) return p[3].padStart(2, '0') + ":" + p[4].padStart(2, '0');
+        const parts = val.match(/\d+/g);
+        if (parts && parts.length >= 5) return parts[3].padStart(2, '0') + ":" + parts[4].padStart(2, '0');
     }
-    if (typeof val === 'string' && val.includes(':')) {
-        const parts = val.split(':');
-        return parts[0].padStart(2, '0') + ":" + parts[1].padStart(2, '0');
+    if (typeof val === 'number') {
+        let totalMinutes = Math.round(val * 1440);
+        let hours = Math.floor(totalMinutes / 60) % 24;
+        let minutes = totalMinutes % 60;
+        return hours.toString().padStart(2, '0') + ":" + minutes.toString().padStart(2, '0');
     }
     return "";
 }
 
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    if (tab === 'table') {
+        document.getElementById('btn-tab-table').classList.add('active');
+        document.getElementById('view-table').style.display = 'block';
+        document.getElementById('view-schedule').style.display = 'none';
+    } else {
+        document.getElementById('btn-tab-schedule').classList.add('active');
+        document.getElementById('view-table').style.display = 'none';
+        document.getElementById('view-schedule').style.display = 'block';
+        renderFullSchedule();
+    }
+}
+
 window.handleResponse = function(response) {
-    const rows = response.table.rows;
-    allGames = rows;
+    if (!response || !response.table) return;
+    allGames = response.table.rows;
     teamStats = {};
 
-    rows.forEach((row) => {
+    allGames.forEach((row) => {
         const c = row.c;
         if (!c || !c[2] || !c[3]) return;
         const home = c[2].v ? c[2].v.toString().trim() : "";
         const guest = c[3].v ? c[3].v.toString().trim() : "";
-        if (home === "Heim" || home === "") return;
+        if (home === "Heim" || home === "" || home === "null") return;
 
         [ {n: home, l: c[8]?.v}, {n: guest, l: c[9]?.v} ].forEach(t => {
             if (!teamStats[t.n]) teamStats[t.n] = { name: t.n, logo: t.l, sp:0, s:0, u:0, n:0, tp:0, tg:0, plus:0, minus:0 };
@@ -285,20 +264,15 @@ window.handleResponse = function(response) {
             else if (resH > resG) w = home;
             else if (resG > resH) w = guest;
 
-            if (w === home) {
-                teamStats[home].s++; teamStats[home].plus += 2;
-                teamStats[guest].n++; teamStats[guest].minus += 2;
-            } else if (w === guest) {
-                teamStats[guest].s++; teamStats[guest].plus += 2;
-                teamStats[home].n++; teamStats[home].minus += 2;
-            } else if (!isWertung && resH === resG) {
-                teamStats[home].u++; teamStats[home].plus += 1; teamStats[home].minus += 1;
-                teamStats[guest].u++; teamStats[guest].plus += 1; teamStats[guest].minus += 1;
+            if (w === home) { teamStats[home].plus += 2; teamStats[guest].minus += 2; }
+            else if (w === guest) { teamStats[guest].plus += 2; teamStats[home].minus += 2; }
+            else if (!isWertung && resH === resG) {
+                teamStats[home].plus += 1; teamStats[home].minus += 1;
+                teamStats[guest].plus += 1; teamStats[guest].minus += 1;
             }
         }
     });
     renderTable();
-    document.getElementById('status-msg').innerText = "Stand: " + new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) + " Uhr";
 };
 
 function renderTable() {
@@ -308,86 +282,155 @@ function renderTable() {
     
     sorted.forEach((t, i) => {
         const row = document.createElement('tr');
-        row.className = 'clickable' + (t.name.toLowerCase().includes("deerns") ? ' highlight' : '');
-        row.onclick = () => showDetails(t.name);
+        if(t.name.toLowerCase().includes("deerns")) row.classList.add('highlight');
+        row.onclick = () => showTeamDetails(t.name);
+        
         const diff = t.tp - t.tg;
         row.innerHTML = `
             <td>${i+1}</td>
-            <td><div class="team-cell"><img class="logo" src="${t.logo ? 'https://www.handball.net/files/clubs/logos/'+t.logo : 'https://www.handball.net/img/default-club-logo.png'}"><span>${t.name}</span></div></td>
-            <td>${t.sp}</td><td>${t.s}</td><td>${t.u}</td><td>${t.n}</td>
-            <td>${t.tp}:${t.tg}</td><td class="diff">${diff > 0 ? '+' : ''}${diff}</td>
+            <td><div class="team-cell"><img class="logo" src="${getLogoUrl(t.logo)}"><span>${t.name}</span></div></td>
+            <td>${t.sp}</td>
+            <td>${t.tp}:${t.tg}</td>
+            <td class="diff-cell">${(diff > 0 ? '+' : '') + diff}</td>
             <td class="pts">${t.plus}:${t.minus}</td>`;
         tbody.appendChild(row);
     });
 }
 
-function showDetails(teamName) {
-    window.scrollTo(0,0);
-    document.getElementById('main-view').style.display = 'none';
-    document.getElementById('detail-view').style.display = 'block';
-    document.getElementById('detail-team-name').innerText = teamName;
-    const team = teamStats[teamName];
-    document.getElementById('detail-team-logo').src = team.logo ? `https://www.handball.net/files/clubs/logos/${team.logo}` : "https://www.handball.net/img/default-club-logo.png";
-    
-    const playedDiv = document.getElementById('played-games');
-    const upcomingDiv = document.getElementById('upcoming-games');
-    playedDiv.innerHTML = ''; upcomingDiv.innerHTML = '';
-
-    const teamGames = [];
-    allGames.forEach((row) => {
+function renderFullSchedule() {
+    const list = document.getElementById('full-schedule-list');
+    list.innerHTML = '';
+    allGames.forEach(row => {
         const c = row.c;
-        if (!c || !c[2] || !c[3]) return;
-        const h = c[2].v?.toString().trim();
-        const g = c[3].v?.toString().trim();
-        if ((h === teamName || g === teamName) && h !== "Heim") {
-            teamGames.push(row);
+        if (!c || !c[2] || !c[3] || c[2].v === "Heim" || c[2].v === null) return;
+        list.appendChild(createGameElement(row));
+    });
+}
+
+function createGameElement(row) {
+    const c = row.c;
+    const h = c[2]?.v || "?";
+    const g = c[3]?.v || "?";
+    const date = c[0]?.f || "";
+    const resH = (c[4] && c[4].v !== null) ? c[4].v : null;
+    const resG = (c[5] && c[5].v !== null) ? c[5].v : null;
+    const timeStr = formatTime(c[1]);
+    
+    const logoH = getLogoUrl(c[8]?.v);
+    const logoG = getLogoUrl(c[9]?.v);
+    const scoreText = (resH !== null && resG !== null) ? `${resH}:${resG}` : (timeStr ? timeStr + " Uhr" : "TBD");
+
+    const div = document.createElement('div');
+    div.className = 'game-item';
+    div.innerHTML = `
+        <div class="game-main">
+            <div class="game-team" onclick="showTeamDetails('${h}')"><img src="${logoH}" class="logo"><span>${h}</span></div>
+            <div class="game-score">${scoreText}</div>
+            <div class="game-team right" onclick="showTeamDetails('${g}')"><span>${g}</span><img src="${logoG}" class="logo"></div>
+        </div>
+        <div class="game-info">${date}</div>
+    `;
+    return div;
+}
+
+function showTeamDetails(teamName) {
+    if (!teamName || teamName === "?" || !teamStats[teamName]) return;
+    
+    const modal = document.getElementById('modal-overlay');
+    const win = document.getElementById('modal-window');
+    const content = document.getElementById('app-content');
+    const team = teamStats[teamName];
+
+    document.getElementById('modal-team-name').innerText = teamName;
+    document.getElementById('modal-logo').src = getLogoUrl(team.logo);
+    const list = document.getElementById('modal-games-list');
+    list.innerHTML = '';
+    
+    allGames.forEach(row => {
+        if(row.c && (row.c[2]?.v === teamName || row.c[3]?.v === teamName)) {
+            list.appendChild(createGameElement(row));
         }
     });
 
-    teamGames.forEach((row) => {
-        const c = row.c;
-        const h = c[2].v?.toString().trim();
-        const g = c[3].v?.toString().trim();
-        const date = c[0]?.f || c[0]?.v || "?";
-        const formattedTime = formatTime(c[1]);
-        
-        const resH = (c[4] && c[4].v !== null && !isNaN(parseFloat(c[4].v))) ? parseFloat(c[4].v) : null;
-        const resG = (c[5] && c[5].v !== null && !isNaN(parseFloat(c[5].v))) ? parseFloat(c[5].v) : null;
-        const isPlayed = (resH !== null || (c[6] && (c[6].v === true || c[6].v === "TRUE" || c[6].v === "true")));
-        const displayScore = isPlayed ? `${resH}:${resG}` : (formattedTime ? formattedTime + ' Uhr' : 'TBD');
-
-        const html = `
-            <div class="game-card">
-                <div class="game-date">${date.split('.')[0]}.${date.split('.')[1]}.</div>
-                <div class="game-teams"><b>${h}</b><br>${g}</div>
-                <div class="game-res">${displayScore}</div>
-            </div>`;
-        
-        if (isPlayed) playedDiv.innerHTML += html;
-        else upcomingDiv.innerHTML += html;
+    modal.style.display = 'flex';
+    content.classList.add('blurred');
+    requestAnimationFrame(() => {
+        win.classList.add('open');
+        win.style.transform = 'translateY(0)';
     });
 }
 
-function showMainView() {
-    document.getElementById('detail-view').style.display = 'none';
-    document.getElementById('main-view').style.display = 'block';
+function closeDetails() {
+    const win = document.getElementById('modal-window');
+    const content = document.getElementById('app-content');
+    const modal = document.getElementById('modal-overlay');
+    
+    win.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1)';
+    win.style.transform = 'translateY(100%)';
+    win.classList.remove('open');
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        content.classList.remove('blurred');
+    }, 200);
 }
+
+// Flüssige Swipe-Logik
+let startY = 0;
+let currentY = 0;
+const winModal = document.getElementById('modal-window');
+
+winModal.addEventListener('touchstart', e => {
+    // Nur swipen wenn oben am Anschlag
+    if (winModal.scrollTop <= 0) {
+        startY = e.touches[0].pageY;
+        winModal.style.transition = 'none';
+    }
+}, {passive: true});
+
+winModal.addEventListener('touchmove', e => {
+    if (startY > 0) {
+        currentY = e.touches[0].pageY;
+        const diff = currentY - startY;
+        if (diff > 0) {
+            // Verhindert Scrolling des Hintergrunds während des Ziehens
+            if (e.cancelable) e.preventDefault();
+            winModal.style.transform = `translateY(${diff}px)`;
+        }
+    }
+}, {passive: false});
+
+winModal.addEventListener('touchend', e => {
+    if (startY > 0) {
+        const diff = currentY - startY;
+        // Wenn mehr als 100px gezogen wurde -> Schließen
+        if (diff > 100) {
+            closeDetails();
+        } else {
+            // Ansonsten zurückfedern
+            winModal.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1)';
+            winModal.style.transform = 'translateY(0)';
+        }
+    }
+    startY = 0;
+}, {passive: true});
+
+// Pull to Refresh für Hauptview
+let refreshStart = 0;
+window.addEventListener('touchstart', e => refreshStart = e.touches[0].pageY, {passive: true});
+window.addEventListener('touchend', e => {
+    if (window.scrollY === 0 && e.changedTouches[0].pageY > refreshStart + 100) fetchData();
+});
 
 function fetchData() {
     const script = document.createElement('script');
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J100`;
+    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J150`;
     document.body.appendChild(script);
 }
-
-// PWA Install Prompt Logic
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('install-overlay').style.display = 'flex';
-});
 
 fetchData();
 </script>
 </body>
 </html>
+
+  
