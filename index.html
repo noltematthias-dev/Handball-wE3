@@ -2,12 +2,14 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- PWA / Android Meta Tags -->
     <meta name="theme-color" content="#0055a5">
-    <!-- Ein schöneres Manifest mit optimierten Icons für Android/Pixel -->
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%22,%22short_name%22:%22wE-Tabelle%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#0055a5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Verbessertes Manifest für echten App-Look auf dem Pixel 9a -->
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%22,%22short_name%22:%22wE-Tabelle%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#0055a5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
 
     <!-- Apple Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,7 +17,7 @@
     <meta name="apple-mobile-web-app-title" content="wE-Tabelle">
     <title>wE-Jugend Live-Tabelle</title>
     
-    <!-- Hochwertigere App Icons -->
+    <!-- App Icons -->
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
     
@@ -35,10 +37,12 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
+            /* Optimierung für den App-Look (Safe Areas) */
             padding: calc(var(--safe-area-top) + 10px) 5px 20px 5px;
             display: flex;
             justify-content: center;
             -webkit-tap-highlight-color: transparent;
+            min-height: 100vh;
         }
 
         .container {
@@ -224,7 +228,6 @@
     <div id="status-msg">Lade Daten...</div>
 </div>
 
-<!-- Hilfebox für Android -->
 <div id="install-overlay">
     <span>App zum Startbildschirm hinzufügen?</span>
     <button onclick="this.parentElement.style.display='none'" style="background:var(--hamburg-blue); border:none; color:white; padding:8px 12px; border-radius:5px;">OK</button>
@@ -376,7 +379,7 @@ function fetchData() {
     document.body.appendChild(script);
 }
 
-// PWA Install Prompt Logic für Android (Pixel 9a)
+// PWA Install Prompt Logic
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
