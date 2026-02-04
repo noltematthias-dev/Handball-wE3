@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA / Android Meta Tags -->
     <meta name="theme-color" content="#0055a5">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%22,%22short_name%22:%22wE-Tabelle%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#0055a5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
 
-    <!-- Apple Web App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="wE-Tabelle">
@@ -42,14 +40,14 @@
         }
 
         #app-content {
-            transition: filter 0.25s ease, transform 0.25s ease;
-            padding: calc(var(--safe-top) + 15px) 10px 80px 10px;
+            transition: filter 0.3s ease;
+            padding: calc(var(--safe-top) + 15px) 10px 100px 10px;
         }
 
         .blurred {
-            filter: blur(8px) brightness(0.95);
-            transform: scale(0.98);
+            filter: blur(8px) brightness(0.9);
             pointer-events: none;
+            user-select: none;
         }
 
         header { text-align: center; margin-bottom: 20px; }
@@ -71,16 +69,19 @@
 
         .tab.active { background: white; color: var(--hamburg-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 15px; margin-bottom: 20px; }
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 12px 8px; margin-bottom: 20px; }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.75rem; table-layout: fixed; }
-        th { text-align: center; color: var(--text-muted); font-size: 0.65rem; padding: 10px 2px; border-bottom: 1px solid #eee; }
+        th { text-align: center; color: var(--text-muted); font-size: 0.62rem; padding: 8px 2px; border-bottom: 1px solid #eee; text-transform: uppercase; }
         td { padding: 12px 2px; text-align: center; border-bottom: 1px solid #f9f9f9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .team-cell { text-align: left; display: flex; align-items: center; gap: 6px; font-weight: 600; }
-        .logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }
-        .pts { font-weight: bold; color: var(--hamburg-blue); }
-        .diff-cell { color: #888; font-size: 0.7rem; }
+        .team-cell { text-align: left; display: flex; align-items: center; gap: 4px; font-weight: 600; overflow: hidden; }
+        .team-cell span { overflow: hidden; text-overflow: ellipsis; }
+        .logo { width: 20px; height: 20px; object-fit: contain; flex-shrink: 0; }
+        
+        .goals-cell { font-variant-numeric: tabular-nums; font-size: 0.7rem; letter-spacing: -0.02em; }
+        .pts { font-weight: bold; color: var(--hamburg-blue); font-variant-numeric: tabular-nums; }
+        .diff-cell { color: #888; font-size: 0.65rem; font-variant-numeric: tabular-nums; }
         .highlight { background-color: #f0f7ff; }
 
         .game-list { display: flex; flex-direction: column; gap: 8px; }
@@ -112,29 +113,114 @@
         
         .game-info { font-size: 0.65rem; color: var(--text-muted); text-align: center; border-top: 1px solid #eee; padding-top: 4px; }
 
-        /* Modal Layout */
+        .scorer-trigger-container {
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+            margin-top: 10px;
+        }
+
+        #btn-scorers-small {
+            width: 44px;
+            height: 44px;
+            background: #fff;
+            color: var(--hamburg-blue);
+            border-radius: 50%; 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        /* Gimmick Animationen */
+        @keyframes rotateBall {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(720deg); }
+        }
+
+        @keyframes pulseButton {
+            0% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+            50% { transform: scale(1.1); box-shadow: 0 8px 20px rgba(0,85,165,0.3); }
+            100% { transform: scale(1); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        }
+
+        #btn-scorers-small.loading {
+            animation: pulseButton 1s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        #btn-scorers-small.loading .icon-ball {
+            animation: rotateBall 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .icon-ball { width: 26px; height: 26px; fill: currentColor; transition: transform 0.2s; }
+
         #modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); display: none;
-            justify-content: center; align-items: flex-end; z-index: 2000;
-            backdrop-filter: blur(2px);
-            transition: opacity 0.2s ease;
+            background: rgba(0,0,0,0.5); 
+            display: none; 
+            justify-content: center; 
+            align-items: flex-end; 
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         #modal-window {
-            background: white; width: 100%; max-width: 500px; max-height: 88vh;
-            border-radius: 20px 20px 0 0; padding: 20px; overflow-y: auto;
+            background: white; 
+            width: 100%; 
+            max-width: 500px; 
+            max-height: 85vh;
+            border-radius: 20px 20px 0 0; 
+            padding: 20px; 
+            overflow-y: auto;
             transform: translateY(100%);
-            transition: transform 0.25s cubic-bezier(0.1, 0.5, 0.1, 1);
+            transition: transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1);
             box-shadow: 0 -5px 30px rgba(0,0,0,0.2);
-            touch-action: none; /* Deaktiviert Browser-Handling für sauberes Swipen */
-            will-change: transform;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
 
+        #modal-overlay.active { display: flex; opacity: 1; }
         #modal-window.open { transform: translateY(0); }
 
         .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-        .close-bar { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 15px auto; }
+        .close-bar { width: 40px; height: 5px; background: #ddd; border-radius: 10px; margin: -10px auto 15px auto; cursor: pointer; }
+
+        .scorer-card {
+            display: grid;
+            grid-template-columns: 40px 1fr 40px;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 5px;
+            border-bottom: 1px solid #f2f2f2;
+        }
+        .scorer-name-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .scorer-name { font-weight: 700; font-size: 0.85rem; color: #111; }
+        .scorer-team { font-size: 0.65rem; color: var(--hamburg-blue); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .scorer-count { 
+            background: #f0f7ff; 
+            color: var(--hamburg-blue); 
+            font-weight: 800; 
+            font-size: 0.9rem;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .scorer-logo { width: 32px; height: 32px; object-fit: contain; }
 
         #refresh-status { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px; padding-bottom: 20px; }
     </style>
@@ -153,21 +239,16 @@
     <div id="view-table" class="card">
         <table>
             <colgroup>
-                <col style="width: 25px;">
+                <col style="width: 20px;">
                 <col style="width: auto;">
-                <col style="width: 25px;">
-                <col style="width: 45px;">
-                <col style="width: 35px;">
-                <col style="width: 40px;">
+                <col style="width: 22px;">
+                <col style="width: 55px;">
+                <col style="width: 30px;">
+                <col style="width: 42px;">
             </colgroup>
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th style="text-align:left;">Team</th>
-                    <th>Sp.</th>
-                    <th>Tore</th>
-                    <th>Diff.</th>
-                    <th>Pkt.</th>
+                    <th>#</th><th style="text-align:left;">Team</th><th>S</th><th>Tore</th><th>+/-</th><th>Pkt.</th>
                 </tr>
             </thead>
             <tbody id="table-body"></tbody>
@@ -176,6 +257,13 @@
 
     <div id="view-schedule" style="display:none;">
         <div id="full-schedule-list" class="game-list"></div>
+        <div class="scorer-trigger-container">
+            <button id="btn-scorers-small" onclick="handleScorerClick()">
+                <svg class="icon-ball" viewBox="0 0 24 24">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C13.11,4 14.12,4.36 14.94,4.96L12,10.1L9.06,4.96C9.88,4.36 10.89,4 12,4M5.61,6.5C6.39,5.7 7.37,5.13 8.44,4.82L10.85,9.03L5.6,10.05C5.47,8.83 5.47,7.63 5.61,6.5M4,12C4,11.33 4.09,10.68 4.25,10.06L9.5,9.04L9.5,14.96L4.25,13.94C4.09,13.32 4,12.67 4,12M5.61,17.5C5.47,16.37 5.47,15.17 5.6,13.95L10.85,14.97L8.44,19.18C7.37,18.87 6.39,18.3 5.61,17.5M12,20C10.89,20 9.88,19.64 9.06,19.04L12,13.9L14.94,19.04C14.12,19.64 13.11,20 12,20M18.39,17.5C17.61,18.3 16.63,18.87 15.56,19.18L13.15,14.97L18.4,13.95C18.53,15.17 18.53,16.37 18.39,17.5M20,12C20,12.67 19.91,13.32 19.75,13.94L14.5,14.96L14.5,9.04L19.75,10.06C19.91,10.68 20,11.33 20,12M18.39,6.5C18.53,7.63 18.53,8.83 18.4,10.05L13.15,9.03L15.56,4.82C16.63,5.13 17.61,5.7 18.39,6.5Z" />
+                </svg>
+            </button>
+        </div>
     </div>
 
     <div id="refresh-status">Zum Aktualisieren nach unten ziehen</div>
@@ -183,12 +271,12 @@
 
 <div id="modal-overlay" onclick="closeDetails()">
     <div id="modal-window" onclick="event.stopPropagation()">
-        <div class="close-bar"></div>
-        <div class="modal-header">
+        <div class="close-bar" id="modal-swipe-handle"></div>
+        <div class="modal-header" id="modal-header-handle">
             <img id="modal-logo" src="" class="logo" style="width:40px; height:40px;">
-            <h2 id="modal-team-name" style="margin:0; font-size:1.1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></h2>
+            <h2 id="modal-title" style="margin:0; font-size:1.1rem;"></h2>
         </div>
-        <div id="modal-games-list" class="game-list" style="touch-action: pan-y;"></div>
+        <div id="modal-content"></div>
     </div>
 </div>
 
@@ -196,19 +284,64 @@
 const SHEET_ID = '1rHPyr7IP8vaYsDIpWXjH3kp7I65lBwXLhhkNYYDByHE';
 let allGames = [];
 let teamStats = {};
+let scorers = [];
+let teamLogos = {};
+
+// Swipe-Logik für Modal
+let startY = 0;
+let currentY = 0;
+const modalWindow = document.getElementById('modal-window');
+
+function initSwipe() {
+    const handleEvents = (e) => {
+        startY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+        currentY = startY;
+        modalWindow.style.transition = 'none';
+    };
+
+    const moveEvents = (e) => {
+        if (startY === 0) return;
+        currentY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+        const deltaY = currentY - startY;
+        if (deltaY > 0) {
+            modalWindow.style.transform = `translateY(${deltaY}px)`;
+        }
+    };
+
+    const endEvents = () => {
+        const deltaY = currentY - startY;
+        modalWindow.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.5, 0.1, 1)';
+        if (deltaY > 100) {
+            closeDetails();
+        } else {
+            modalWindow.style.transform = 'translateY(0)';
+        }
+        startY = 0;
+    };
+
+    const header = document.getElementById('modal-header-handle');
+    const handle = document.getElementById('modal-swipe-handle');
+
+    [header, handle].forEach(el => {
+        el.addEventListener('touchstart', handleEvents);
+        el.addEventListener('touchmove', moveEvents);
+        el.addEventListener('touchend', endEvents);
+    });
+}
 
 function getLogoUrl(logoId) {
     return logoId ? `https://www.handball.net/files/clubs/logos/${logoId}` : "https://www.handball.net/img/default-club-logo.png";
 }
 
+function normalizeName(s) {
+    if (!s) return "";
+    return s.toString().toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+}
+
 function formatTime(cell) {
-    if (!cell || cell.v === null || cell.v === undefined) return "";
+    if (!cell || cell.v === null) return "";
     if (cell.f) return cell.f;
     const val = cell.v;
-    if (typeof val === 'string' && val.includes('Date')) {
-        const parts = val.match(/\d+/g);
-        if (parts && parts.length >= 5) return parts[3].padStart(2, '0') + ":" + parts[4].padStart(2, '0');
-    }
     if (typeof val === 'number') {
         let totalMinutes = Math.round(val * 1440);
         let hours = Math.floor(totalMinutes / 60) % 24;
@@ -236,34 +369,35 @@ window.handleResponse = function(response) {
     if (!response || !response.table) return;
     allGames = response.table.rows;
     teamStats = {};
-
+    teamLogos = {};
     allGames.forEach((row) => {
         const c = row.c;
         if (!c || !c[2] || !c[3]) return;
         const home = c[2].v ? c[2].v.toString().trim() : "";
         const guest = c[3].v ? c[3].v.toString().trim() : "";
         if (home === "Heim" || home === "" || home === "null") return;
-
+        const dataH = { id: c[8]?.v, originalName: home };
+        const dataG = { id: c[9]?.v, originalName: guest };
+        teamLogos[home] = dataH; 
+        teamLogos[normalizeName(home)] = dataH;
+        teamLogos[guest] = dataG; 
+        teamLogos[normalizeName(guest)] = dataG;
         [ {n: home, l: c[8]?.v}, {n: guest, l: c[9]?.v} ].forEach(t => {
-            if (!teamStats[t.n]) teamStats[t.n] = { name: t.n, logo: t.l, sp:0, s:0, u:0, n:0, tp:0, tg:0, plus:0, minus:0 };
+            if (!teamStats[t.n]) teamStats[t.n] = { name: t.n, logo: t.l, sp:0, tp:0, tg:0, plus:0, minus:0 };
         });
-
-        const resH = (c[4] && c[4].v !== null && !isNaN(parseFloat(c[4].v))) ? parseFloat(c[4].v) : null;
-        const resG = (c[5] && c[5].v !== null && !isNaN(parseFloat(c[5].v))) ? parseFloat(c[5].v) : null;
-        const isWertung = (c[6] && (c[6].v === true || c[6].v === "TRUE" || c[6].v === "true"));
+        const resH = (c[4] && c[4].v !== null) ? parseFloat(c[4].v) : null;
+        const resG = (c[5] && c[5].v !== null) ? parseFloat(c[5].v) : null;
+        const isWertung = (c[6] && (c[6].v === true || c[6].v === "TRUE"));
         const winnerName = (c[7] && c[7].v) ? c[7].v.toString().trim() : null;
-
         if (isWertung || (resH !== null && resG !== null)) {
             teamStats[home].sp++; teamStats[guest].sp++;
             const gH = resH || 0; const gG = resG || 0;
             teamStats[home].tp += gH; teamStats[home].tg += gG;
             teamStats[guest].tp += gG; teamStats[guest].tg += gH;
-            
             let w = "";
             if (isWertung) w = winnerName;
             else if (resH > resG) w = home;
             else if (resG > resH) w = guest;
-
             if (w === home) { teamStats[home].plus += 2; teamStats[guest].minus += 2; }
             else if (w === guest) { teamStats[guest].plus += 2; teamStats[home].minus += 2; }
             else if (!isWertung && resH === resG) {
@@ -275,22 +409,61 @@ window.handleResponse = function(response) {
     renderTable();
 };
 
+window.handleScorerResponse = function(response) {
+    if (!response || !response.table || !response.table.rows) return;
+    const rows = response.table.rows;
+    const startIdx = (rows[0].c[0]?.v === "Name") ? 1 : 0;
+    scorers = rows.slice(startIdx)
+        .filter(row => row.c && row.c[0] && row.c[0].v && row.c[0].v !== "Name")
+        .map(row => {
+            const name = row.c[0] ? row.c[0].v.toString().trim() : "Unbekannt";
+            const team = row.c[1] ? row.c[1].v.toString().trim() : "";
+            const goalsVal = row.c[2] ? row.c[2].v : 0;
+            return { name, team, goals: (typeof goalsVal === 'number' ? goalsVal : parseInt(goalsVal) || 0) };
+        })
+        .filter(s => s.goals > 0);
+};
+
+function findLogo(teamName) {
+    if (!teamName) return null;
+    const inputOriginal = teamName.trim();
+    const inputNorm = normalizeName(teamName);
+    if (teamLogos[inputOriginal]) return teamLogos[inputOriginal];
+    if (teamLogos[inputNorm]) return teamLogos[inputNorm];
+    const words = inputOriginal.split(/\s+/).map(w => normalizeName(w)).filter(w => w.length > 2);
+    for (let storedKey in teamLogos) {
+        const storedNorm = normalizeName(storedKey);
+        for (let w of words) {
+            if (storedNorm.includes(w) || w.includes(storedNorm)) return teamLogos[storedKey];
+        }
+    }
+    return null;
+}
+
+function handleScorerClick() {
+    const btn = document.getElementById('btn-scorers-small');
+    btn.classList.add('loading');
+    fetchData();
+    setTimeout(() => {
+        btn.classList.remove('loading');
+        showScorers();
+    }, 2000);
+}
+
 function renderTable() {
     const sorted = Object.values(teamStats).sort((a,b) => (b.plus - a.plus) || (a.minus - b.minus) || ((b.tp-b.tg) - (a.tp-a.tg)) || (b.tp - a.tp));
     const tbody = document.getElementById('table-body');
     tbody.innerHTML = '';
-    
     sorted.forEach((t, i) => {
         const row = document.createElement('tr');
         if(t.name.toLowerCase().includes("deerns")) row.classList.add('highlight');
         row.onclick = () => showTeamDetails(t.name);
-        
         const diff = t.tp - t.tg;
         row.innerHTML = `
             <td>${i+1}</td>
             <td><div class="team-cell"><img class="logo" src="${getLogoUrl(t.logo)}"><span>${t.name}</span></div></td>
             <td>${t.sp}</td>
-            <td>${t.tp}:${t.tg}</td>
+            <td class="goals-cell">${t.tp}:${t.tg}</td>
             <td class="diff-cell">${(diff > 0 ? '+' : '') + diff}</td>
             <td class="pts">${t.plus}:${t.minus}</td>`;
         tbody.appendChild(row);
@@ -309,128 +482,6 @@ function renderFullSchedule() {
 
 function createGameElement(row) {
     const c = row.c;
-    const h = c[2]?.v || "?";
-    const g = c[3]?.v || "?";
+    const h = c[2]?.v || "?"; const g = c[3]?.v || "?";
     const date = c[0]?.f || "";
-    const resH = (c[4] && c[4].v !== null) ? c[4].v : null;
-    const resG = (c[5] && c[5].v !== null) ? c[5].v : null;
-    const timeStr = formatTime(c[1]);
-    
-    const logoH = getLogoUrl(c[8]?.v);
-    const logoG = getLogoUrl(c[9]?.v);
-    const scoreText = (resH !== null && resG !== null) ? `${resH}:${resG}` : (timeStr ? timeStr + " Uhr" : "TBD");
-
-    const div = document.createElement('div');
-    div.className = 'game-item';
-    div.innerHTML = `
-        <div class="game-main">
-            <div class="game-team" onclick="showTeamDetails('${h}')"><img src="${logoH}" class="logo"><span>${h}</span></div>
-            <div class="game-score">${scoreText}</div>
-            <div class="game-team right" onclick="showTeamDetails('${g}')"><span>${g}</span><img src="${logoG}" class="logo"></div>
-        </div>
-        <div class="game-info">${date}</div>
-    `;
-    return div;
-}
-
-function showTeamDetails(teamName) {
-    if (!teamName || teamName === "?" || !teamStats[teamName]) return;
-    
-    const modal = document.getElementById('modal-overlay');
-    const win = document.getElementById('modal-window');
-    const content = document.getElementById('app-content');
-    const team = teamStats[teamName];
-
-    document.getElementById('modal-team-name').innerText = teamName;
-    document.getElementById('modal-logo').src = getLogoUrl(team.logo);
-    const list = document.getElementById('modal-games-list');
-    list.innerHTML = '';
-    
-    allGames.forEach(row => {
-        if(row.c && (row.c[2]?.v === teamName || row.c[3]?.v === teamName)) {
-            list.appendChild(createGameElement(row));
-        }
-    });
-
-    modal.style.display = 'flex';
-    content.classList.add('blurred');
-    requestAnimationFrame(() => {
-        win.classList.add('open');
-        win.style.transform = 'translateY(0)';
-    });
-}
-
-function closeDetails() {
-    const win = document.getElementById('modal-window');
-    const content = document.getElementById('app-content');
-    const modal = document.getElementById('modal-overlay');
-    
-    win.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1)';
-    win.style.transform = 'translateY(100%)';
-    win.classList.remove('open');
-    
-    setTimeout(() => {
-        modal.style.display = 'none';
-        content.classList.remove('blurred');
-    }, 200);
-}
-
-// Flüssige Swipe-Logik
-let startY = 0;
-let currentY = 0;
-const winModal = document.getElementById('modal-window');
-
-winModal.addEventListener('touchstart', e => {
-    // Nur swipen wenn oben am Anschlag
-    if (winModal.scrollTop <= 0) {
-        startY = e.touches[0].pageY;
-        winModal.style.transition = 'none';
-    }
-}, {passive: true});
-
-winModal.addEventListener('touchmove', e => {
-    if (startY > 0) {
-        currentY = e.touches[0].pageY;
-        const diff = currentY - startY;
-        if (diff > 0) {
-            // Verhindert Scrolling des Hintergrunds während des Ziehens
-            if (e.cancelable) e.preventDefault();
-            winModal.style.transform = `translateY(${diff}px)`;
-        }
-    }
-}, {passive: false});
-
-winModal.addEventListener('touchend', e => {
-    if (startY > 0) {
-        const diff = currentY - startY;
-        // Wenn mehr als 100px gezogen wurde -> Schließen
-        if (diff > 100) {
-            closeDetails();
-        } else {
-            // Ansonsten zurückfedern
-            winModal.style.transition = 'transform 0.2s cubic-bezier(0.1, 0.5, 0.1, 1)';
-            winModal.style.transform = 'translateY(0)';
-        }
-    }
-    startY = 0;
-}, {passive: true});
-
-// Pull to Refresh für Hauptview
-let refreshStart = 0;
-window.addEventListener('touchstart', e => refreshStart = e.touches[0].pageY, {passive: true});
-window.addEventListener('touchend', e => {
-    if (window.scrollY === 0 && e.changedTouches[0].pageY > refreshStart + 100) fetchData();
-});
-
-function fetchData() {
-    const script = document.createElement('script');
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J150`;
-    document.body.appendChild(script);
-}
-
-fetchData();
-</script>
-</body>
-</html>
-
-  
+    const resH = (c[4] && c[4].v !== null) ? c[4].
