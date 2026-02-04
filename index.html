@@ -277,7 +277,7 @@ function showTeamDetails(name) {
             const h = row.c[2]?.v || "", g = row.c[3]?.v || "";
             const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
             const datum = row.c[0]?.f || row.c[0]?.v || "";
-            const res = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? `${row.c[4].v}:${row.c[5].v}` : uhrzeit;
+            const res = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? `${row.c[4].v}:${row.c[5].v}` : (uhrzeit + " Uhr");
             div.innerHTML = `<div class="game-main"><div class="game-team"><img src="${getLogoUrl(row.c[8]?.v)}" class="logo"><span>${h}</span></div><div class="game-score">${res}</div><div class="game-team right"><span>${g}</span><img src="${getLogoUrl(row.c[9]?.v)}" class="logo"></div></div><div class="game-info">${datum}</div>`;
             list.appendChild(div);
         }
@@ -333,7 +333,7 @@ function switchTab(t) {
                 const gName = row.c[3]?.v || "";
                 const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
                 const datum = row.c[0]?.f || row.c[0]?.v || "";
-                const scoreDisplay = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? row.c[4].v+':'+row.c[5].v : uhrzeit;
+                const scoreDisplay = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? row.c[4].v+':'+row.c[5].v : (uhrzeit + " Uhr");
                 
                 div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${hName}')"><img src="${getLogoUrl(row.c[8]?.v)}" class="logo"><span>${hName}</span></div><div class="game-score">${scoreDisplay}</div><div class="game-team right" onclick="showTeamDetails('${gName}')"><span>${gName}</span><img src="${getLogoUrl(row.c[9]?.v)}" class="logo"></div></div><div class="game-info">${datum}</div>`;
                 list.appendChild(div);
