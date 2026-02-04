@@ -113,9 +113,9 @@
         
         .game-info { font-size: 0.7rem; color: var(--text-muted); text-align: center; padding-top: 6px; border-top: 1px dashed #ddd; }
 
-        /* Container für den Button (nicht mehr fixiert) */
+        /* Container für den Button - Standardmäßig versteckt */
         .scorer-trigger-container { 
-            display: flex;
+            display: none; 
             justify-content: center;
             margin: 24px 0;
             width: 100%;
@@ -182,8 +182,8 @@
         <div id="full-schedule-list" class="game-list"></div>
     </div>
 
-    <!-- Der Ball-Button befindet sich jetzt hier innerhalb des scrollbaren Bereichs -->
-    <div class="scorer-trigger-container">
+    <!-- Der Ball-Button wird nur im Spielplan eingeblendet -->
+    <div id="scorer-btn-wrapper" class="scorer-trigger-container">
         <button id="btn-scorers-small" onclick="handleScorerClick()">
             <svg class="icon-ball" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C13.11,4 14.12,4.36 14.94,4.96L12,10.1L9.06,4.96C9.88,4.36 10.89,4 12,4M5.61,6.5C6.39,5.7 7.37,5.13 8.44,4.82L10.85,9.03L5.6,10.05C5.47,8.83 5.47,7.63 5.61,6.5M4,12C4,11.33 4.09,10.68 4.25,10.06L9.5,9.04L9.5,14.96L4.25,13.94C4.09,13.32 4,12.67 4,12M5.61,17.5C5.47,16.37 5.47,15.17 5.6,13.95L10.85,14.97L8.44,19.18C7.37,18.87 6.39,18.3 5.61,17.5M12,20C10.89,20 9.88,19.64 9.06,19.04L12,13.9L14.94,19.04C14.12,19.64 13.11,20 12,20M18.39,17.5C17.61,18.3 16.63,18.87 15.56,19.18L13.15,14.97L18.4,13.95C18.53,15.17 18.53,16.37 18.39,17.5M20,12C20,12.67 19.91,13.32 19.75,13.94L14.5,14.96L14.5,9.04L19.75,10.06C19.91,10.68 20,11.33 20,12M18.39,6.5C18.53,7.63 18.53,8.83 18.4,10.05L13.15,9.03L15.56,4.82C16.63,5.13 17.61,5.7 18.39,6.5Z" /></svg>
         </button>
@@ -316,6 +316,11 @@ function switchTab(t) {
     document.getElementById('btn-tab-'+t).classList.add('active');
     document.getElementById('view-table').style.display = t === 'table' ? 'block' : 'none';
     document.getElementById('view-schedule').style.display = t === 'schedule' ? 'block' : 'none';
+    
+    // Sichtbarkeit des Ball-Buttons steuern
+    const btnWrapper = document.getElementById('scorer-btn-wrapper');
+    btnWrapper.style.display = t === 'schedule' ? 'flex' : 'none';
+
     if(t === 'schedule') {
         const list = document.getElementById('full-schedule-list');
         list.innerHTML = '';
