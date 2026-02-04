@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA Einstellungen -->
+    <!-- PWA Settings -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0055a5">
     
@@ -99,7 +99,7 @@
         
         .game-main {
             display: grid;
-            grid-template-columns: 1fr 80px 1fr;
+            grid-template-columns: 1fr 90px 1fr;
             align-items: center;
             gap: 8px;
         }
@@ -156,6 +156,7 @@
         }
         .scorer-name { font-weight: 700; font-size: 1rem; }
         .scorer-count { background: #d3e3fd; color: #041e49; font-weight: 900; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .scorer-team { font-size: 0.8rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -193,8 +194,8 @@
 <div id="modal-overlay" onclick="closeDetails()">
     <div id="modal-window" onclick="event.stopPropagation()">
         <div class="close-bar"></div>
-        <div class="modal-header">
-            <img id="modal-logo" src="" class="logo" style="width:48px; height:48px;">
+        <div class="modal-header" style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <img id="modal-logo" src="" class="logo" style="width:40px; height:40px; display:none;">
             <h2 id="modal-title" style="margin:0; font-size:1.2rem;"></h2>
         </div>
         <div id="modal-content"></div>
@@ -204,29 +205,76 @@
 <script>
 const SHEET_ID = '1rHPyr7IP8vaYsDIpWXjH3kp7I65lBwXLhhkNYYDByHE';
 let allGames = [], teamStats = {}, scorers = [], teamLogos = {};
+let fallbackAMTVLogo = ""; 
 
-function getLogoUrl(id) { return id ? `https://www.handball.net/files/clubs/logos/${id}` : "https://www.handball.net/img/default-club-logo.png"; }
+function getLogoUrl(id) { 
+    return id ? `https://www.handball.net/files/clubs/logos/${id}` : "https://www.handball.net/img/default-club-logo.png"; 
+}
+
+function normalizeName(n) { return n ? n.toString().toLowerCase().replace(/\s+/g, '') : ''; }
+
+function getTeamLogoId(teamName) {
+    const norm = normalizeName(teamName);
+    // Spezifische Prüfung für Deerns/AMTV Teams
+    if ((norm.includes('deerns') || norm.includes('amtv')) && fallbackAMTVLogo) {
+        return fallbackAMTVLogo;
+    }
+    return teamLogos[norm] || "";
+}
 
 window.handleResponse = function(r) {
     if(!r || !r.table) return;
-    allGames = r.table.rows; teamStats = {};
+    allGames = r.table.rows; 
+    teamStats = {};
+    
+    // Logos und Fallback (J2) extrahieren
+    // Da Range A1:J... ist J der Index 9. Zeile 2 ist Index 0 in der Datenmatrix (nach Header)
+    allGames.forEach((row, idx) => {
+        const c = row.c;
+        if(!c) return;
+
+        // J2 auslesen: Index 0 (erste Zeile nach Header bei Range A1) und Spalte Index 9 (J)
+        if (idx === 0 && c[9]?.v) {
+            fallbackAMTVLogo = c[9].v;
+        }
+
+        const h = c[2]?.v, g = c[3]?.v;
+        if(h && c[8]?.v) teamLogos[normalizeName(h)] = c[8].v;
+        if(g && c[9]?.v) teamLogos[normalizeName(g)] = c[9].v;
+    });
+
     allGames.forEach(row => {
         const c = row.c; 
-        if(!c || !c[2] || !c[3] || (c[2].v && c[2].v === "Heim")) return;
+        if(!c || !c[2] || !c[3]) return;
         const h = c[2].v, g = c[3].v;
-        if(!h || !g) return; 
         
-        teamLogos[h] = {id: c[8]?.v}; teamLogos[g] = {id: c[9]?.v};
-        [h, g].forEach(n => { if(!teamStats[n]) teamStats[n] = {name:n, logo:teamLogos[n].id, sp:0, tp:0, tg:0, plus:0, minus:0}; });
+        if(h === "Heim" || h === "Team") return;
+        if(!h || !g) return;
+
+        [h, g].forEach(n => { 
+            if(!teamStats[n]) teamStats[n] = {name:n, sp:0, tp:0, tg:0, plus:0, minus:0}; 
+        });
         
         const rH = c[4]?.v, rG = c[5]?.v;
-        if(rH !== null && rG !== null && rH !== undefined && rG !== undefined) {
+        const isForcedValue = c[6]?.v === true || c[6]?.v === "TRUE";
+        const winnerName = c[7]?.v;
+        const hasValidTore = (rH !== null && rG !== null && rH !== undefined && rG !== undefined && (rH + rG > 0));
+        
+        if (hasValidTore || isForcedValue) {
             teamStats[h].sp++; teamStats[g].sp++;
-            teamStats[h].tp += rH; teamStats[h].tg += rG;
-            teamStats[g].tp += rG; teamStats[g].tg += rH;
-            if(rH > rG) { teamStats[h].plus += 2; teamStats[g].minus += 2; }
-            else if(rG > rH) { teamStats[g].plus += 2; teamStats[h].minus += 2; }
-            else { teamStats[h].plus++; teamStats[h].minus++; teamStats[g].plus++; teamStats[g].minus++; }
+            if (hasValidTore) {
+                teamStats[h].tp += rH; teamStats[h].tg += rG;
+                teamStats[g].tp += rG; teamStats[g].tg += rH;
+            }
+            if (isForcedValue && winnerName) {
+                if (winnerName === h) { teamStats[h].plus += 2; teamStats[g].minus += 2; }
+                else if (winnerName === g) { teamStats[g].plus += 2; teamStats[h].minus += 2; }
+                else { teamStats[h].plus++; teamStats[h].minus++; teamStats[g].plus++; teamStats[g].minus++; }
+            } else if (hasValidTore) {
+                if(rH > rG) { teamStats[h].plus += 2; teamStats[g].minus += 2; }
+                else if(rG > rH) { teamStats[g].plus += 2; teamStats[h].minus += 2; }
+                else { teamStats[h].plus++; teamStats[h].minus++; teamStats[g].plus++; teamStats[g].minus++; }
+            }
         }
     });
     renderTable();
@@ -234,11 +282,12 @@ window.handleResponse = function(r) {
 
 window.handleScorerResponse = function(r) {
     if(!r || !r.table) return;
-    scorers = r.table.rows.slice(1).map(row => ({ 
+    const rows = r.table.rows;
+    scorers = rows.map(row => ({ 
         name: row.c[0]?.v, 
         team: row.c[1]?.v, 
         goals: row.c[2]?.v 
-    })).filter(s => s.goals > 0 && s.name);
+    })).filter(s => s.goals > 0 && s.name && s.name !== "Torschütze" && s.name !== "Spieler");
 };
 
 function renderTable() {
@@ -249,7 +298,8 @@ function renderTable() {
         const row = document.createElement('tr');
         if(t.name.toLowerCase().includes("deerns")) row.classList.add('highlight');
         row.onclick = () => showTeamDetails(t.name);
-        row.innerHTML = `<td>${i+1}</td><td><div class="team-cell"><img class="logo" src="${getLogoUrl(t.logo)}"><span>${t.name}</span></div></td><td>${t.sp}</td><td style="font-variant-numeric: tabular-nums;">${t.tp}:${t.tg}</td><td style="color:#777">${t.tp-t.tg}</td><td class="pts">${t.plus}:${t.minus}</td>`;
+        const logoId = getTeamLogoId(t.name);
+        row.innerHTML = `<td>${i+1}</td><td><div class="team-cell"><img class="logo" src="${getLogoUrl(logoId)}"><span>${t.name}</span></div></td><td>${t.sp}</td><td style="font-variant-numeric: tabular-nums;">${t.tp}:${t.tg}</td><td style="color:#777">${t.tp-t.tg}</td><td class="pts">${t.plus}:${t.minus}</td>`;
         tbody.appendChild(row);
     });
 }
@@ -258,14 +308,33 @@ function handleScorerClick() {
     const btn = document.getElementById('btn-scorers-small');
     btn.classList.add('loading');
     fetchData();
-    setTimeout(() => { btn.classList.remove('loading'); showScorers(); }, 1000);
+    setTimeout(() => { btn.classList.remove('loading'); showScorers(); }, 800);
+}
+
+function getResultText(row) {
+    const h = row.c[2]?.v || "";
+    const g = row.c[3]?.v || "";
+    const rH = row.c[4]?.v, rG = row.c[5]?.v;
+    const isForced = row.c[6]?.v === true || row.c[6]?.v === "TRUE";
+    const winner = row.c[7]?.v;
+    const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
+
+    if (isForced) {
+        let suffix = "";
+        if (winner === h) suffix = " (H)";
+        else if (winner === g) suffix = " (G)";
+        return `0:0${suffix}`;
+    } else if (rH !== null && rG !== null && (rH + rG > 0)) {
+        return `${rH}:${rG}`;
+    }
+    return (uhrzeit + " Uhr");
 }
 
 function showTeamDetails(name) {
     const t = teamStats[name];
     if(!t) return;
     document.getElementById('modal-title').innerText = name;
-    document.getElementById('modal-logo').src = getLogoUrl(t.logo);
+    document.getElementById('modal-logo').src = getLogoUrl(getTeamLogoId(name));
     document.getElementById('modal-logo').style.display = 'block';
     const content = document.getElementById('modal-content');
     content.innerHTML = '<div class="game-list"></div>';
@@ -275,10 +344,9 @@ function showTeamDetails(name) {
             const div = document.createElement('div');
             div.className = 'game-item';
             const h = row.c[2]?.v || "", g = row.c[3]?.v || "";
-            const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
             const datum = row.c[0]?.f || row.c[0]?.v || "";
-            const res = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? `${row.c[4].v}:${row.c[5].v}` : (uhrzeit + " Uhr");
-            div.innerHTML = `<div class="game-main"><div class="game-team"><img src="${getLogoUrl(row.c[8]?.v)}" class="logo"><span>${h}</span></div><div class="game-score">${res}</div><div class="game-team right"><span>${g}</span><img src="${getLogoUrl(row.c[9]?.v)}" class="logo"></div></div><div class="game-info">${datum}</div>`;
+            const res = getResultText(row);
+            div.innerHTML = `<div class="game-main"><div class="game-team"><img src="${getLogoUrl(getTeamLogoId(h))}" class="logo"><span>${h}</span></div><div class="game-score">${res}</div><div class="game-team right"><span>${g}</span><img src="${getLogoUrl(getTeamLogoId(g))}" class="logo"></div></div><div class="game-info">${datum}</div>`;
             list.appendChild(div);
         }
     });
@@ -293,7 +361,8 @@ function showScorers() {
     scorers.sort((a,b) => b.goals - a.goals).forEach(s => {
         const div = document.createElement('div');
         div.className = 'scorer-card';
-        div.innerHTML = `<img class="logo" src="${getLogoUrl(teamLogos[s.team]?.id)}"><div><div class="scorer-name">${s.name}</div><div class="scorer-team">${s.team}</div></div><div class="scorer-count">${s.goals}</div>`;
+        const logoId = getTeamLogoId(s.team);
+        div.innerHTML = `<img class="logo" src="${getLogoUrl(logoId)}"><div style="flex:1;"><div class="scorer-name">${s.name}</div><div class="scorer-team">${s.team}</div></div><div class="scorer-count">${s.goals}</div>`;
         list.appendChild(div);
     });
     openModal();
@@ -318,7 +387,6 @@ function switchTab(t) {
     document.getElementById('btn-tab-'+t).classList.add('active');
     document.getElementById('view-table').style.display = t === 'table' ? 'block' : 'none';
     document.getElementById('view-schedule').style.display = t === 'schedule' ? 'block' : 'none';
-    
     const btnWrapper = document.getElementById('scorer-btn-wrapper');
     btnWrapper.style.display = t === 'schedule' ? 'flex' : 'none';
 
@@ -326,16 +394,14 @@ function switchTab(t) {
         const list = document.getElementById('full-schedule-list');
         list.innerHTML = '';
         allGames.forEach(row => { 
-            if(row.c && row.c[2] && row.c[2].v && row.c[2].v !== "Heim") {
+            if(row.c && row.c[2] && row.c[2].v && row.c[2].v !== "Heim" && row.c[2].v !== "Team") {
                 const div = document.createElement('div');
                 div.className = 'game-item';
                 const hName = row.c[2].v;
                 const gName = row.c[3]?.v || "";
-                const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
                 const datum = row.c[0]?.f || row.c[0]?.v || "";
-                const scoreDisplay = (row.c[4]?.v !== null && row.c[4]?.v !== undefined) ? row.c[4].v+':'+row.c[5].v : (uhrzeit + " Uhr");
-                
-                div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${hName}')"><img src="${getLogoUrl(row.c[8]?.v)}" class="logo"><span>${hName}</span></div><div class="game-score">${scoreDisplay}</div><div class="game-team right" onclick="showTeamDetails('${gName}')"><span>${gName}</span><img src="${getLogoUrl(row.c[9]?.v)}" class="logo"></div></div><div class="game-info">${datum}</div>`;
+                const scoreDisplay = getResultText(row);
+                div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${hName}')"><img src="${getLogoUrl(getTeamLogoId(hName))}" class="logo"><span>${hName}</span></div><div class="game-score">${scoreDisplay}</div><div class="game-team right" onclick="showTeamDetails('${gName}')"><span>${gName}</span><img src="${getLogoUrl(getTeamLogoId(gName))}" class="logo"></div></div><div class="game-info">${datum}</div>`;
                 list.appendChild(div);
             }
         });
@@ -344,7 +410,7 @@ function switchTab(t) {
 
 function fetchData() {
     const s1 = document.createElement('script'); s1.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J150&gid=0`; document.body.appendChild(s1);
-    const s2 = document.createElement('script'); s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleScorerResponse&sheet=${encodeURIComponent("Torschützenliste")}&range=A1:C100`; document.body.appendChild(s2);
+    const s2 = document.createElement('script'); s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleScorerResponse&sheet=${encodeURIComponent("Torschützenliste")}&range=A1:C200`; document.body.appendChild(s2);
 }
 
 let startY = 0;
