@@ -8,8 +8,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0055a5">
     
+    <!-- Manifest for Android/Chrome -->
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%20Live%22,%22short_name%22:%22wE-Handball%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#f0f2f5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
 
+    <!-- iOS Support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
@@ -41,6 +43,7 @@
             padding-top: var(--safe-top);
         }
 
+        /* Verhindert Scrollen im Hintergrund bei offenem Modal */
         body.modal-open { overflow: hidden; }
 
         #app-content {
@@ -87,7 +90,8 @@
         
         .pts { font-weight: 900; color: var(--hamburg-blue); }
         
-        .highlight { background-color: transparent; border-left: none; }
+        /* Highlight für das eigene Team */
+        .highlight { background-color: rgba(0, 85, 165, 0.05); }
 
         .game-list { display: flex; flex-direction: column; gap: 12px; }
         .game-item {
@@ -132,6 +136,7 @@
         #btn-scorers-small.loading .icon-ball { animation: rotateBall 1.5s infinite linear; }
         .icon-ball { width: 28px; height: 28px; fill: currentColor; }
 
+        /* MODAL STYLES */
         #modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.32); display: none; justify-content: center; align-items: flex-end; 
@@ -143,6 +148,7 @@
             border-radius: 28px 28px 0 0; padding: 24px; overflow-y: auto;
             transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.05, 0.7, 0.1, 1);
             box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
+            -webkit-overflow-scrolling: touch; /* Flüssiges Scrollen auf iOS */
         }
 
         #modal-overlay.active { display: flex; opacity: 1; }
@@ -173,9 +179,20 @@
     <div id="view-table">
         <div class="card">
             <table>
-                <colgroup><col style="width: 30px;"><col><col style="width: 30px;"><col style="width: 70px;"><col style="width: 40px;"><col style="width: 50px;"></colgroup>
-                <thead><tr><th>#</th><th style="text-align:left;">Team</th><th>S</th><th>Tore</th><th>+/-</th><th>Pkt.</th></tr></thead>
-                <tbody id="table-body"></tbody>
+                <colgroup>
+                    <col style="width: 30px;">
+                    <col>
+                    <col style="width: 30px;">
+                    <col style="width: 70px;">
+                    <col style="width: 40px;">
+                    <col style="width: 50px;">
+                </colgroup>
+                <thead>
+                    <tr><th>#</th><th style="text-align:left;">Team</th><th>S</th><th>Tore</th><th>+/-</th><th>Pkt.</th></tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Wird dynamisch gefüllt -->
+                </tbody>
             </table>
         </div>
     </div>
@@ -184,6 +201,7 @@
         <div id="full-schedule-list" class="game-list"></div>
     </div>
 
+    <!-- Schwebender Button für Torschützen (nur im Spielplan sichtbar) -->
     <div id="scorer-btn-wrapper" class="scorer-trigger-container">
         <button id="btn-scorers-small" onclick="handleScorerClick()">
             <svg class="icon-ball" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C13.11,4 14.12,4.36 14.94,4.96L12,10.1L9.06,4.96C9.88,4.36 10.89,4 12,4M5.61,6.5C6.39,5.7 7.37,5.13 8.44,4.82L10.85,9.03L5.6,10.05C5.47,8.83 5.47,7.63 5.61,6.5M4,12C4,11.33 4.09,10.68 4.25,10.06L9.5,9.04L9.5,14.96L4.25,13.94C4.09,13.32 4,12.67 4,12M5.61,17.5C5.47,16.37 5.47,15.17 5.6,13.95L10.85,14.97L8.44,19.18C7.37,18.87 6.39,18.3 5.61,17.5M12,20C10.89,20 9.88,19.64 9.06,19.04L12,13.9L14.94,19.04C14.12,19.64 13.11,20 12,20M18.39,17.5C17.61,18.3 16.63,18.87 15.56,19.18L13.15,14.97L18.4,13.95C18.53,15.17 18.53,16.37 18.39,17.5M20,12C20,12.67 19.91,13.32 19.75,13.94L14.5,14.96L14.5,9.04L19.75,10.06C19.91,10.68 20,11.33 20,12M18.39,6.5C18.53,7.63 18.53,8.83 18.4,10.05L13.15,9.03L15.56,4.82C16.63,5.13 17.61,5.7 18.39,6.5Z" /></svg>
@@ -215,56 +233,48 @@ function normalizeName(n) { return n ? n.toString().toLowerCase().replace(/\s+/g
 
 function getTeamLogoId(teamName) {
     const norm = normalizeName(teamName);
-    // Spezifische Prüfung für Deerns/AMTV Teams
     if ((norm.includes('deerns') || norm.includes('amtv')) && fallbackAMTVLogo) {
         return fallbackAMTVLogo;
     }
     return teamLogos[norm] || "";
 }
 
+// Handler für Tabellendaten
 window.handleResponse = function(r) {
     if(!r || !r.table) return;
     allGames = r.table.rows; 
     teamStats = {};
     
-    // Logos und Fallback (J2) extrahieren
-    // Da Range A1:J... ist J der Index 9. Zeile 2 ist Index 0 in der Datenmatrix (nach Header)
+    // Logos extrahieren
     allGames.forEach((row, idx) => {
         const c = row.c;
         if(!c) return;
-
-        // J2 auslesen: Index 0 (erste Zeile nach Header bei Range A1) und Spalte Index 9 (J)
-        if (idx === 0 && c[9]?.v) {
-            fallbackAMTVLogo = c[9].v;
-        }
-
+        if (idx === 0 && c[9]?.v) fallbackAMTVLogo = c[9].v;
         const h = c[2]?.v, g = c[3]?.v;
         if(h && c[8]?.v) teamLogos[normalizeName(h)] = c[8].v;
         if(g && c[9]?.v) teamLogos[normalizeName(g)] = c[9].v;
     });
 
+    // Statistik berechnen
     allGames.forEach(row => {
         const c = row.c; 
         if(!c || !c[2] || !c[3]) return;
         const h = c[2].v, g = c[3].v;
-        
         if(h === "Heim" || h === "Team") return;
         if(!h || !g) return;
 
-        [h, g].forEach(n => { 
-            if(!teamStats[n]) teamStats[n] = {name:n, sp:0, tp:0, tg:0, plus:0, minus:0}; 
-        });
-        
+        [h, g].forEach(n => { if(!teamStats[n]) teamStats[n] = {name:n, sp:0, tp:0, tg:0, plus:0, minus:0}; });
+
         const rH = c[4]?.v, rG = c[5]?.v;
         const isForcedValue = c[6]?.v === true || c[6]?.v === "TRUE";
         const winnerName = c[7]?.v;
-        const hasValidTore = (rH !== null && rG !== null && rH !== undefined && rG !== undefined && (rH + rG > 0));
-        
+        const hasValidTore = (rH !== null && rG !== null && (rH + rG > 0));
+
         if (hasValidTore || isForcedValue) {
             teamStats[h].sp++; teamStats[g].sp++;
-            if (hasValidTore) {
-                teamStats[h].tp += rH; teamStats[h].tg += rG;
-                teamStats[g].tp += rG; teamStats[g].tg += rH;
+            if (hasValidTore) { 
+                teamStats[h].tp += rH; teamStats[h].tg += rG; 
+                teamStats[g].tp += rG; teamStats[g].tg += rH; 
             }
             if (isForcedValue && winnerName) {
                 if (winnerName === h) { teamStats[h].plus += 2; teamStats[g].minus += 2; }
@@ -280,13 +290,11 @@ window.handleResponse = function(r) {
     renderTable();
 };
 
+// Handler für Torschützen
 window.handleScorerResponse = function(r) {
     if(!r || !r.table) return;
-    const rows = r.table.rows;
-    scorers = rows.map(row => ({ 
-        name: row.c[0]?.v, 
-        team: row.c[1]?.v, 
-        goals: row.c[2]?.v 
+    scorers = r.table.rows.map(row => ({ 
+        name: row.c[0]?.v, team: row.c[1]?.v, goals: row.c[2]?.v 
     })).filter(s => s.goals > 0 && s.name && s.name !== "Torschütze" && s.name !== "Spieler");
 };
 
@@ -298,8 +306,7 @@ function renderTable() {
         const row = document.createElement('tr');
         if(t.name.toLowerCase().includes("deerns")) row.classList.add('highlight');
         row.onclick = () => showTeamDetails(t.name);
-        const logoId = getTeamLogoId(t.name);
-        row.innerHTML = `<td>${i+1}</td><td><div class="team-cell"><img class="logo" src="${getLogoUrl(logoId)}"><span>${t.name}</span></div></td><td>${t.sp}</td><td style="font-variant-numeric: tabular-nums;">${t.tp}:${t.tg}</td><td style="color:#777">${t.tp-t.tg}</td><td class="pts">${t.plus}:${t.minus}</td>`;
+        row.innerHTML = `<td>${i+1}</td><td><div class="team-cell"><img class="logo" src="${getLogoUrl(getTeamLogoId(t.name))}"><span>${t.name}</span></div></td><td>${t.sp}</td><td style="font-variant-numeric: tabular-nums;">${t.tp}:${t.tg}</td><td style="color:#777">${t.tp-t.tg}</td><td class="pts">${t.plus}:${t.minus}</td>`;
         tbody.appendChild(row);
     });
 }
@@ -307,32 +314,28 @@ function renderTable() {
 function handleScorerClick() {
     const btn = document.getElementById('btn-scorers-small');
     btn.classList.add('loading');
-    fetchData();
-    setTimeout(() => { btn.classList.remove('loading'); showScorers(); }, 800);
+    fetchData(); // Aktuelle Daten holen
+    setTimeout(() => { 
+        btn.classList.remove('loading'); 
+        showScorers(); 
+    }, 800);
 }
 
 function getResultText(row) {
-    const h = row.c[2]?.v || "";
-    const g = row.c[3]?.v || "";
+    const h = row.c[2]?.v || "", g = row.c[3]?.v || "";
     const rH = row.c[4]?.v, rG = row.c[5]?.v;
     const isForced = row.c[6]?.v === true || row.c[6]?.v === "TRUE";
     const winner = row.c[7]?.v;
     const uhrzeit = row.c[1]?.f || row.c[1]?.v || "--:--";
-
     if (isForced) {
-        let suffix = "";
-        if (winner === h) suffix = " (H)";
-        else if (winner === g) suffix = " (G)";
+        let suffix = winner === h ? " (H)" : (winner === g ? " (G)" : "");
         return `0:0${suffix}`;
-    } else if (rH !== null && rG !== null && (rH + rG > 0)) {
-        return `${rH}:${rG}`;
-    }
-    return (uhrzeit + " Uhr");
+    } else if (rH !== null && rG !== null && (rH + rG > 0)) return `${rH}:${rG}`;
+    return uhrzeit + " Uhr";
 }
 
 function showTeamDetails(name) {
-    const t = teamStats[name];
-    if(!t) return;
+    const t = teamStats[name]; if(!t) return;
     document.getElementById('modal-title').innerText = name;
     document.getElementById('modal-logo').src = getLogoUrl(getTeamLogoId(name));
     document.getElementById('modal-logo').style.display = 'block';
@@ -341,12 +344,9 @@ function showTeamDetails(name) {
     const list = content.querySelector('.game-list');
     allGames.forEach(row => {
         if(row.c && (row.c[2]?.v === name || row.c[3]?.v === name)) {
-            const div = document.createElement('div');
+            const div = document.createElement('div'), h = row.c[2]?.v || "", g = row.c[3]?.v || "";
             div.className = 'game-item';
-            const h = row.c[2]?.v || "", g = row.c[3]?.v || "";
-            const datum = row.c[0]?.f || row.c[0]?.v || "";
-            const res = getResultText(row);
-            div.innerHTML = `<div class="game-main"><div class="game-team"><img src="${getLogoUrl(getTeamLogoId(h))}" class="logo"><span>${h}</span></div><div class="game-score">${res}</div><div class="game-team right"><span>${g}</span><img src="${getLogoUrl(getTeamLogoId(g))}" class="logo"></div></div><div class="game-info">${datum}</div>`;
+            div.innerHTML = `<div class="game-main"><div class="game-team"><img src="${getLogoUrl(getTeamLogoId(h))}" class="logo"><span>${h}</span></div><div class="game-score">${getResultText(row)}</div><div class="game-team right"><span>${g}</span><img src="${getLogoUrl(getTeamLogoId(g))}" class="logo"></div></div><div class="game-info">${row.c[0]?.f || row.c[0]?.v || ""}</div>`;
             list.appendChild(div);
         }
     });
@@ -361,22 +361,25 @@ function showScorers() {
     scorers.sort((a,b) => b.goals - a.goals).forEach(s => {
         const div = document.createElement('div');
         div.className = 'scorer-card';
-        const logoId = getTeamLogoId(s.team);
-        div.innerHTML = `<img class="logo" src="${getLogoUrl(logoId)}"><div style="flex:1;"><div class="scorer-name">${s.name}</div><div class="scorer-team">${s.team}</div></div><div class="scorer-count">${s.goals}</div>`;
+        div.innerHTML = `<img class="logo" src="${getLogoUrl(getTeamLogoId(s.team))}"><div style="flex:1;"><div class="scorer-name">${s.name}</div><div class="scorer-team">${s.team}</div></div><div class="scorer-count">${s.goals}</div>`;
         list.appendChild(div);
     });
     openModal();
 }
 
 function openModal() {
+    const win = document.getElementById('modal-window');
+    win.scrollTop = 0; // Immer oben starten
     document.getElementById('modal-overlay').classList.add('active');
     document.getElementById('app-content').classList.add('blurred');
     document.body.classList.add('modal-open');
-    setTimeout(() => document.getElementById('modal-window').classList.add('open'), 10);
+    setTimeout(() => win.classList.add('open'), 10);
 }
 
 function closeDetails() {
-    document.getElementById('modal-window').classList.remove('open');
+    const win = document.getElementById('modal-window');
+    win.classList.remove('open');
+    win.style.transform = ''; // Reset transform for next time
     document.getElementById('app-content').classList.remove('blurred');
     document.body.classList.remove('modal-open');
     setTimeout(() => { document.getElementById('modal-overlay').classList.remove('active'); }, 300);
@@ -389,19 +392,15 @@ function switchTab(t) {
     document.getElementById('view-schedule').style.display = t === 'schedule' ? 'block' : 'none';
     const btnWrapper = document.getElementById('scorer-btn-wrapper');
     btnWrapper.style.display = t === 'schedule' ? 'flex' : 'none';
-
+    
     if(t === 'schedule') {
         const list = document.getElementById('full-schedule-list');
         list.innerHTML = '';
         allGames.forEach(row => { 
-            if(row.c && row.c[2] && row.c[2].v && row.c[2].v !== "Heim" && row.c[2].v !== "Team") {
-                const div = document.createElement('div');
+            if(row.c && row.c[2]?.v && row.c[2]?.v !== "Heim" && row.c[2]?.v !== "Team") {
+                const div = document.createElement('div'), h = row.c[2].v, g = row.c[3]?.v || "";
                 div.className = 'game-item';
-                const hName = row.c[2].v;
-                const gName = row.c[3]?.v || "";
-                const datum = row.c[0]?.f || row.c[0]?.v || "";
-                const scoreDisplay = getResultText(row);
-                div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${hName}')"><img src="${getLogoUrl(getTeamLogoId(hName))}" class="logo"><span>${hName}</span></div><div class="game-score">${scoreDisplay}</div><div class="game-team right" onclick="showTeamDetails('${gName}')"><span>${gName}</span><img src="${getLogoUrl(getTeamLogoId(gName))}" class="logo"></div></div><div class="game-info">${datum}</div>`;
+                div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${h}')"><img src="${getLogoUrl(getTeamLogoId(h))}" class="logo"><span>${h}</span></div><div class="game-score">${getResultText(row)}</div><div class="game-team right" onclick="showTeamDetails('${g}')"><span>${g}</span><img src="${getLogoUrl(getTeamLogoId(g))}" class="logo"></div></div><div class="game-info">${row.c[0]?.f || row.c[0]?.v || ""}</div>`;
                 list.appendChild(div);
             }
         });
@@ -409,22 +408,46 @@ function switchTab(t) {
 }
 
 function fetchData() {
-    const s1 = document.createElement('script'); s1.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J150&gid=0`; document.body.appendChild(s1);
-    const s2 = document.createElement('script'); s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleScorerResponse&sheet=${encodeURIComponent("Torschützenliste")}&range=A1:C200`; document.body.appendChild(s2);
+    const s1 = document.createElement('script'); 
+    s1.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleResponse&range=A1:J150&gid=0`; 
+    document.body.appendChild(s1);
+    
+    const s2 = document.createElement('script'); 
+    s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleScorerResponse&sheet=${encodeURIComponent("Torschützenliste")}&range=A1:C200`; 
+    document.body.appendChild(s2);
 }
 
+// OPTIMIERTE GESTEN-STEUERUNG
 let startY = 0;
-document.getElementById('modal-window').addEventListener('touchstart', (e) => startY = e.touches[0].clientY);
-document.getElementById('modal-window').addEventListener('touchmove', (e) => {
-    let diff = e.touches[0].clientY - startY;
-    if (diff > 0) {
-        document.getElementById('modal-window').style.transform = `translateY(${diff}px)`;
-        if (diff > 160) closeDetails();
+let winEl = document.getElementById('modal-window');
+
+winEl.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+}, { passive: true });
+
+winEl.addEventListener('touchmove', (e) => {
+    let currentY = e.touches[0].clientY;
+    let diff = currentY - startY;
+
+    // Nur interagieren, wenn am oberen Rand des Modals und Geste nach unten geht
+    if (winEl.scrollTop <= 0 && diff > 0) {
+        if (e.cancelable) e.preventDefault();
+        winEl.style.transform = `translateY(${diff}px)`;
+        winEl.style.transition = 'none';
     }
-});
-document.getElementById('modal-window').addEventListener('touchend', () => {
-    document.getElementById('modal-window').style.transform = '';
-});
+}, { passive: false });
+
+winEl.addEventListener('touchend', (e) => {
+    let diff = e.changedTouches[0].clientY - startY;
+    winEl.style.transition = ''; // Restore CSS transitions
+    
+    // Schließen ab einem Schwellenwert von 120px
+    if (winEl.scrollTop <= 0 && diff > 120) {
+        closeDetails();
+    } else {
+        winEl.style.transform = '';
+    }
+}, { passive: true });
 
 window.onload = fetchData;
 </script>
