@@ -4,18 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <!-- PWA Settings -->
+    <!-- PWA Einstellungen -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0055a5">
     
-    <!-- Manifest for Android/Chrome -->
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22wE-Jugend%20Handball%20Live%22,%22short_name%22:%22wE-Handball%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22orientation%22:%22portrait%22,%22background_color%22:%22#f0f2f5%22,%22theme_color%22:%22#0055a5%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3209/3209109.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22,%22purpose%22:%22any%20maskable%22}]}">
-
-    <!-- iOS Support -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209109.png">
-
     <title>wE-Jugend Live-Tabelle</title>
     
     <style>
@@ -26,7 +18,6 @@
             --text-main: #1d1b20;
             --text-muted: #49454f;
             --safe-top: env(safe-area-inset-top, 0px);
-            --gemini-purple: #6e44ff;
         }
 
         * { 
@@ -130,60 +121,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: none; cursor: pointer;
         }
 
-        /* Gemini AI Button & UI Elements */
-        .ai-button {
-            background: linear-gradient(135deg, #6e44ff, #b892ff);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(110, 68, 255, 0.3);
-            transition: transform 0.2s;
-        }
-        .ai-button:active { transform: scale(0.98); }
-        .ai-button:disabled { opacity: 0.7; cursor: wait; }
-
-        .ai-report-box {
-            background: #fdfbff;
-            border: 1px solid #e0d0ff;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            color: #312e49;
-            position: relative;
-            overflow: hidden;
-        }
-        .ai-report-box::before {
-            content: "✨";
-            position: absolute;
-            top: 4px;
-            right: 8px;
-            opacity: 0.3;
-        }
-
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s infinite linear;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes rotateBall { 0% { transform: rotate(0deg); } 100% { transform: rotate(720deg); } }
-        #btn-scorers-small.loading .icon-ball { animation: rotateBall 1.5s infinite linear; }
         .icon-ball { width: 28px; height: 28px; fill: currentColor; }
 
         /* MODAL STYLES */
@@ -198,7 +135,6 @@
             border-radius: 28px 28px 0 0; padding: 24px; overflow-y: auto;
             transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.05, 0.7, 0.1, 1);
             box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
-            -webkit-overflow-scrolling: touch;
         }
 
         #modal-overlay.active { display: flex; opacity: 1; }
@@ -224,23 +160,11 @@
             <button id="btn-tab-table" class="tab active" onclick="switchTab('table')">Tabelle</button>
             <button id="btn-tab-schedule" class="tab" onclick="switchTab('schedule')">Spielplan</button>
         </div>
-        <button id="btn-ai-summary" class="ai-button" onclick="generateSeasonSummary()">
-            ✨ Saison-Analyse erstellen
-        </button>
-        <div id="season-ai-report" style="display:none;"></div>
     </header>
 
     <div id="view-table">
         <div class="card">
             <table>
-                <colgroup>
-                    <col style="width: 30px;">
-                    <col>
-                    <col style="width: 30px;">
-                    <col style="width: 70px;">
-                    <col style="width: 40px;">
-                    <col style="width: 50px;">
-                </colgroup>
                 <thead>
                     <tr><th>#</th><th style="text-align:left;">Team</th><th>S</th><th>Tore</th><th>+/-</th><th>Pkt.</th></tr>
                 </thead>
@@ -254,7 +178,7 @@
     </div>
 
     <div id="scorer-btn-wrapper" class="scorer-trigger-container">
-        <button id="btn-scorers-small" onclick="handleScorerClick()">
+        <button id="btn-scorers-small" onclick="showScorers()">
             <svg class="icon-ball" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4C13.11,4 14.12,4.36 14.94,4.96L12,10.1L9.06,4.96C9.88,4.36 10.89,4 12,4M5.61,6.5C6.39,5.7 7.37,5.13 8.44,4.82L10.85,9.03L5.6,10.05C5.47,8.83 5.47,7.63 5.61,6.5M4,12C4,11.33 4.09,10.68 4.25,10.06L9.5,9.04L9.5,14.96L4.25,13.94C4.09,13.32 4,12.67 4,12M5.61,17.5C5.47,16.37 5.47,15.17 5.6,13.95L10.85,14.97L8.44,19.18C7.37,18.87 6.39,18.3 5.61,17.5M12,20C10.89,20 9.88,19.64 9.06,19.04L12,13.9L14.94,19.04C14.12,19.64 13.11,20 12,20M18.39,17.5C17.61,18.3 16.63,18.87 15.56,19.18L13.15,14.97L18.4,13.95C18.53,15.17 18.53,16.37 18.39,17.5M20,12C20,12.67 19.91,13.32 19.75,13.94L14.5,14.96L14.5,9.04L19.75,10.06C19.91,10.68 20,11.33 20,12M18.39,6.5C18.53,7.63 18.53,8.83 18.4,10.05L13.15,9.03L15.56,4.82C16.63,5.13 17.61,5.7 18.39,6.5Z" /></svg>
         </button>
     </div>
@@ -267,90 +191,14 @@
             <img id="modal-logo" src="" class="logo" style="width:40px; height:40px; display:none;">
             <h2 id="modal-title" style="margin:0; font-size:1.2rem;"></h2>
         </div>
-        <div id="team-ai-section"></div>
         <div id="modal-content"></div>
     </div>
 </div>
 
 <script>
-const apiKey = ""; // Wird dynamisch bereitgestellt
 const SHEET_ID = '1rHPyr7IP8vaYsDIpWXjH3kp7I65lBwXLhhkNYYDByHE';
 let allGames = [], teamStats = {}, scorers = [], teamLogos = {};
 let fallbackAMTVLogo = ""; 
-
-async function callGemini(prompt, systemPrompt = "Du bist ein erfahrener Handball-Trainer und Analytiker für die wE-Jugend.") {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-    const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] }
-    };
-
-    let retries = 0;
-    const maxRetries = 5;
-    while (retries <= maxRetries) {
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "Fehler bei der Analyse.";
-        } catch (error) {
-            if (retries === maxRetries) throw error;
-            await new Promise(res => setTimeout(res, Math.pow(2, retries) * 1000));
-            retries++;
-        }
-    }
-}
-
-async function generateTeamAnalysis(teamName) {
-    const btn = document.getElementById('btn-ai-team');
-    const container = document.getElementById('team-ai-report');
-    btn.disabled = true;
-    btn.innerHTML = `<div class="loading-spinner"></div> Analysiere...`;
-
-    const stats = teamStats[teamName];
-    const games = allGames.filter(r => r.c && (r.c[2]?.v === teamName || r.c[3]?.v === teamName))
-        .map(r => `${r.c[2]?.v} vs ${r.c[3]?.v} (${getResultText(r)})`).join(", ");
-
-    const prompt = `Analysiere die Leistung von ${teamName}. 
-    Statistik: ${stats.sp} Spiele, ${stats.plus}:${stats.minus} Punkte, ${stats.tp}:${stats.tg} Tore.
-    Ergebnisse: ${games}. 
-    Schreibe einen kurzen, motivierenden Bericht (max 3-4 Sätze) für Eltern und Trainer über die aktuelle Form und Stärken des Teams. Antworte auf Deutsch.`;
-
-    try {
-        const result = await callGemini(prompt);
-        container.innerHTML = `<div class="ai-report-box">${result}</div>`;
-        container.style.display = 'block';
-        btn.style.display = 'none';
-    } catch (e) {
-        container.innerHTML = `<div class="ai-report-box" style="border-color:red;">Analyse fehlgeschlagen. Bitte später versuchen.</div>`;
-    }
-}
-
-async function generateSeasonSummary() {
-    const btn = document.getElementById('btn-ai-summary');
-    const container = document.getElementById('season-ai-report');
-    btn.disabled = true;
-    btn.innerHTML = `<div class="loading-spinner"></div> Analysiere Saison...`;
-
-    const sorted = Object.values(teamStats).sort((a,b) => (b.plus - a.plus));
-    const tableData = sorted.map((t, i) => `${i+1}. ${t.name}: ${t.plus}:${t.minus} Pkt, ${t.tp}:${t.tg} Tore`).join("\n");
-
-    const prompt = `Hier ist der aktuelle Stand der wE-Jugend Handball-Tabelle:\n${tableData}\n
-    Fasse die aktuelle Situation in der Liga zusammen. Wer dominiert? Wer ist Überraschungssieger? Halte es kurz, sportlich und motivierend (max 5 Sätze). Antworte auf Deutsch.`;
-
-    try {
-        const result = await callGemini(prompt);
-        container.innerHTML = `<div class="ai-report-box">${result}</div>`;
-        container.style.display = 'block';
-        btn.style.display = 'none';
-    } catch (e) {
-        btn.innerHTML = `✨ Fehler beim Laden`;
-        btn.disabled = false;
-    }
-}
 
 function getLogoUrl(id) { 
     return id ? `https://www.handball.net/files/clubs/logos/${id}` : "https://www.handball.net/img/default-club-logo.png"; 
@@ -360,9 +208,7 @@ function normalizeName(n) { return n ? n.toString().toLowerCase().replace(/\s+/g
 
 function getTeamLogoId(teamName) {
     const norm = normalizeName(teamName);
-    if ((norm.includes('deerns') || norm.includes('amtv')) && fallbackAMTVLogo) {
-        return fallbackAMTVLogo;
-    }
+    if ((norm.includes('deerns') || norm.includes('amtv')) && fallbackAMTVLogo) return fallbackAMTVLogo;
     return teamLogos[norm] || "";
 }
 
@@ -385,7 +231,6 @@ window.handleResponse = function(r) {
         if(!c || !c[2] || !c[3]) return;
         const h = c[2].v, g = c[3].v;
         if(h === "Heim" || h === "Team") return;
-        if(!h || !g) return;
 
         [h, g].forEach(n => { if(!teamStats[n]) teamStats[n] = {name:n, sp:0, tp:0, tg:0, plus:0, minus:0}; });
 
@@ -418,7 +263,7 @@ window.handleScorerResponse = function(r) {
     if(!r || !r.table) return;
     scorers = r.table.rows.map(row => ({ 
         name: row.c[0]?.v, team: row.c[1]?.v, goals: row.c[2]?.v 
-    })).filter(s => s.goals > 0 && s.name && s.name !== "Torschütze" && s.name !== "Spieler");
+    })).filter(s => s.goals > 0 && s.name && s.name !== "Torschütze");
 };
 
 function renderTable() {
@@ -432,16 +277,6 @@ function renderTable() {
         row.innerHTML = `<td>${i+1}</td><td><div class="team-cell"><img class="logo" src="${getLogoUrl(getTeamLogoId(t.name))}"><span>${t.name}</span></div></td><td>${t.sp}</td><td style="font-variant-numeric: tabular-nums;">${t.tp}:${t.tg}</td><td style="color:#777">${t.tp-t.tg}</td><td class="pts">${t.plus}:${t.minus}</td>`;
         tbody.appendChild(row);
     });
-}
-
-function handleScorerClick() {
-    const btn = document.getElementById('btn-scorers-small');
-    btn.classList.add('loading');
-    fetchData(); 
-    setTimeout(() => { 
-        btn.classList.remove('loading'); 
-        showScorers(); 
-    }, 800);
 }
 
 function getResultText(row) {
@@ -458,19 +293,9 @@ function getResultText(row) {
 }
 
 function showTeamDetails(name) {
-    const t = teamStats[name]; if(!t) return;
     document.getElementById('modal-title').innerText = name;
     document.getElementById('modal-logo').src = getLogoUrl(getTeamLogoId(name));
     document.getElementById('modal-logo').style.display = 'block';
-    
-    // AI Section in Modal
-    document.getElementById('team-ai-section').innerHTML = `
-        <button id="btn-ai-team" class="ai-button" onclick="generateTeamAnalysis('${name}')">
-            ✨ KI-Spielbericht erstellen
-        </button>
-        <div id="team-ai-report" style="display:none; margin-bottom:12px;"></div>
-    `;
-
     const content = document.getElementById('modal-content');
     content.innerHTML = '<div class="game-list"></div>';
     const list = content.querySelector('.game-list');
@@ -488,7 +313,6 @@ function showTeamDetails(name) {
 function showScorers() {
     document.getElementById('modal-title').innerText = "Torschützen";
     document.getElementById('modal-logo').style.display = 'none';
-    document.getElementById('team-ai-section').innerHTML = ''; // Keine AI für Torschützenliste
     const list = document.getElementById('modal-content');
     list.innerHTML = '';
     scorers.sort((a,b) => b.goals - a.goals).forEach(s => {
@@ -522,14 +346,13 @@ function switchTab(t) {
     document.getElementById('btn-tab-'+t).classList.add('active');
     document.getElementById('view-table').style.display = t === 'table' ? 'block' : 'none';
     document.getElementById('view-schedule').style.display = t === 'schedule' ? 'block' : 'none';
-    const btnWrapper = document.getElementById('scorer-btn-wrapper');
-    btnWrapper.style.display = t === 'schedule' ? 'flex' : 'none';
+    document.getElementById('scorer-btn-wrapper').style.display = t === 'schedule' ? 'flex' : 'none';
     
     if(t === 'schedule') {
         const list = document.getElementById('full-schedule-list');
         list.innerHTML = '';
         allGames.forEach(row => { 
-            if(row.c && row.c[2]?.v && row.c[2]?.v !== "Heim" && row.c[2]?.v !== "Team") {
+            if(row.c && row.c[2]?.v && row.c[2]?.v !== "Heim") {
                 const div = document.createElement('div'), h = row.c[2].v, g = row.c[3]?.v || "";
                 div.className = 'game-item';
                 div.innerHTML = `<div class="game-main"><div class="game-team" onclick="showTeamDetails('${h}')"><img src="${getLogoUrl(getTeamLogoId(h))}" class="logo"><span>${h}</span></div><div class="game-score">${getResultText(row)}</div><div class="game-team right" onclick="showTeamDetails('${g}')"><span>${g}</span><img src="${getLogoUrl(getTeamLogoId(g))}" class="logo"></div></div><div class="game-info">${row.c[0]?.f || row.c[0]?.v || ""}</div>`;
@@ -548,25 +371,6 @@ function fetchData() {
     s2.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=responseHandler:handleScorerResponse&sheet=${encodeURIComponent("Torschützenliste")}&range=A1:C200`; 
     document.body.appendChild(s2);
 }
-
-// GESTEN-STEUERUNG
-let startY = 0;
-let winEl = document.getElementById('modal-window');
-winEl.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
-winEl.addEventListener('touchmove', (e) => {
-    let currentY = e.touches[0].clientY;
-    let diff = currentY - startY;
-    if (winEl.scrollTop <= 0 && diff > 0) {
-        if (e.cancelable) e.preventDefault();
-        winEl.style.transform = `translateY(${diff}px)`;
-        winEl.style.transition = 'none';
-    }
-}, { passive: false });
-winEl.addEventListener('touchend', (e) => {
-    let diff = e.changedTouches[0].clientY - startY;
-    winEl.style.transition = ''; 
-    if (winEl.scrollTop <= 0 && diff > 120) { closeDetails(); } else { winEl.style.transform = ''; }
-}, { passive: true });
 
 window.onload = fetchData;
 </script>
